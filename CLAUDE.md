@@ -29,6 +29,14 @@ CLAUDE_MODEL=claude-opus-4-6 python -m ingestion.run_ingestion
 python -m ingestion.run_ingestion --db-path /tmp/test.db --pdf-dir data/pdf --csv-dir data/csv
 ```
 
+## Run the chatbot
+
+```bash
+python chatbot/weather_chatbot.py
+```
+
+Starts an interactive CLI. Each answer is grounded in a live SQL query against `db/weather.db`. Requires `ANTHROPIC_API_KEY` in `.env` and the database to exist (run ingestion first).
+
 ## Run the analysis notebook
 
 ```bash
@@ -71,6 +79,9 @@ db/
 
 analysis/
   weather_analysis.ipynb  # Phase 2 — 5 analyses (launch with: jupyter notebook)
+
+chatbot/
+  weather_chatbot.py      # Phase 3 — CLI chatbot (launch with: python chatbot/weather_chatbot.py)
 
 docs/
   schema_decisions.md  # schema design rationale and data quality catalog

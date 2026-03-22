@@ -48,6 +48,8 @@ weather-analyzer/
 │   └── run_ingestion.py              # pipeline entry point
 ├── analysis/
 │   └── weather_analysis.ipynb        # Phase 2 — 5 analyses (Jupyter Notebook)
+├── chatbot/
+│   └── weather_chatbot.py            # Phase 3 — CLI chatbot (Claude API + SQL tool use)
 ├── tests/                            # 66 unit tests (no API key required)
 ├── docs/
 │   ├── schema_decisions.md           # schema rationale and data quality catalog
@@ -106,9 +108,28 @@ jupyter notebook analysis/weather_analysis.ipynb
 
 All charts are sourced from `active_daily_weather` and `monthly_summary` in `db/weather.db` — no hardcoded values.
 
-### Phase 3 — AI Chatbot
+### Phase 3 — AI Chatbot (complete)
 
-Claude API with **SQL tool use** — the LLM generates SQL queries against the SQLite database and returns grounded answers. No vector database needed; structured weather data is better served by exact SQL than fuzzy semantic search.
+Claude API with **SQL tool use**. Every answer is grounded in a live SQL query against `db/weather.db` — Claude never guesses.
+
+```
+User question → Claude API → query_weather(sql) tool
+  → SQLite executes SELECT → rows returned to Claude
+  → Claude formats a natural-language answer
+```
+
+**Launch the chatbot:**
+
+```bash
+python chatbot/weather_chatbot.py
+```
+
+Try asking any of the 5 stakeholder questions:
+1. *What was the hottest day in the last 10 days, and how far above the daily normal was it?*
+2. *Which day had the biggest swing between the high and low temperature?*
+3. *How many of the last 10 days were warmer than average?*
+4. *Did any of the last 10 days set or come close to a record high or low?*
+5. *What are the trends over the past 3 months?*
 
 ## Configuration
 

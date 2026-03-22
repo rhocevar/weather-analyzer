@@ -120,7 +120,10 @@ PDF wins for conflict dates; CSV fills in all other dates. **This is what Phase 
 
 ## Phase 3 Progress
 
-*(Not started)*
+| Step | Description | Status |
+|---|---|---|
+| 1 | Create `chatbot/weather_chatbot.py` — system prompt, SQL tool, conversation loop | ✅ Done |
+| 2 | Update `README.md`, `CLAUDE.md` with chatbot instructions | ✅ Done |
 
 ### Chatbot Architecture (planned)
 
