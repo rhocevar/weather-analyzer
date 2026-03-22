@@ -5,7 +5,8 @@ from pathlib import Path
 import pytest
 
 from ingestion import config
-from ingestion.csv_parser import parse_csv, safe_float
+from ingestion.csv_parser import parse_csv
+from ingestion.csv_parsers.base import safe_float
 
 
 # ── safe_float ────────────────────────────────────────────────────────────────

@@ -100,6 +100,14 @@ PDF wins for conflict dates; CSV fills in all other dates. **This is what Phase 
 
 ---
 
+## Future Improvements
+
+| Area | Idea | Notes |
+|---|---|---|
+| PDF ingestion | Parallel Claude API calls | PDFs are currently parsed sequentially. Since each file is independent, requests could be sent concurrently (e.g. `concurrent.futures.ThreadPoolExecutor`) to reduce total ingestion time from ~O(n) API round trips to ~O(1). Worth doing if the PDF corpus grows significantly. |
+
+---
+
 ## Phase 2 Progress
 
 *(Not started)*
