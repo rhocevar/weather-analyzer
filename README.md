@@ -166,3 +166,15 @@ CLAUDE_MODEL=claude-opus-4-6 python -m ingestion.run_ingestion
 # Run tests (no API key required)
 pytest tests/ -v
 ```
+
+## Future improvements
+
+| Area | Idea |
+|---|---|
+| LLM | Make the config provider-agnostic — abstract the Anthropic client so OpenAI, Gemini, or local models (Ollama) can be swapped in without changing parser code |
+| Ingestion | Add support for additional source formats: `.docx`, `.json`, `.xlsx`, `.html` |
+| Ingestion | Dynamic system prompt — derive chatbot data quality notes from `parse_flags` at runtime instead of hardcoding them, so the prompt stays accurate as new data arrives |
+| Ingestion | Automated scheduling — a cron job or GitHub Actions workflow to pull fresh data and re-run the pipeline on a fixed cadence |
+| Schema | Multi-city support — add a `station_id` / `location` column so the pipeline can ingest data from multiple weather stations without structural changes |
+| Chatbot | Web UI — expose the chatbot as a lightweight REST API (FastAPI) with a browser front-end instead of CLI only |
+| Analysis | Notebook export — automatically render the Jupyter notebook to static HTML or PDF as part of CI so results are shareable without running Jupyter |
