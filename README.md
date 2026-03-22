@@ -71,7 +71,7 @@ Both sources cover Mar 9–17. The pipeline keeps both rows and uses **PDF as th
 
 ## Architecture
 
-### Phase 1 — Data ingestion (complete)
+### Phase 1 — Data ingestion
 
 ```
 PDF files
@@ -89,7 +89,7 @@ CSV file
 
 The `active_daily_weather` view provides a conflict-resolved, single-row-per-date dataset for all downstream queries.
 
-### Phase 2 — Analysis (complete)
+### Phase 2 — Analysis
 
 Jupyter Notebook (`analysis/weather_analysis.ipynb`) with 5 analyses:
 
@@ -109,7 +109,7 @@ jupyter notebook analysis/weather_analysis.ipynb
 
 All charts are sourced from `active_daily_weather` and `monthly_summary` in `db/weather.db` — no hardcoded values.
 
-### Phase 3 — AI Chatbot (complete)
+### Phase 3 — AI Chatbot
 
 Claude API with **SQL tool use**. Every answer is grounded in a live SQL query against `db/weather.db` — Claude never guesses.
 
