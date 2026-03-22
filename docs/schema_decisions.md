@@ -89,6 +89,8 @@ Rather than conditionally omitting the snow depth column for January and Februar
 - `ingested_at` (on each data row) records the UTC timestamp of insertion. If you re-run the pipeline after a bug fix, you can distinguish old vs new records by timestamp.
 - `ingestion_log` records a summary of each ingestion run (per source file): rows parsed, inserted, skipped, and any error messages. It answers "what happened last time?" without digging through stdout logs and supports idempotency checks (skip files already successfully ingested).
 
+`--force-reingest` truncates `daily_weather`, `monthly_summary`, **and** `ingestion_log` together, leaving the database in a fully clean state. Truncating the log is intentional: if `ingestion_log` were left intact, `_already_ingested()` could return `True` for files that were just wiped, creating a silent dependency between two separate code paths. A complete slate wipe removes that coupling.
+
 ---
 
 ## 10. LLM-Based PDF Parsing (Extensibility)

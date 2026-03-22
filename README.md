@@ -15,6 +15,7 @@ source .venv/bin/activate        # macOS / Linux
 
 # 3. Install dependencies
 pip install -r requirements.txt
+pip install -e .                 # makes ingestion + chatbot packages importable
 
 # 4. Add your Anthropic API key
 cp .env.example .env
@@ -139,6 +140,7 @@ All settings can be overridden via environment variables:
 |---|---|---|
 | `ANTHROPIC_API_KEY` | *(required)* | Anthropic API key |
 | `CLAUDE_MODEL` | `claude-sonnet-4-6` | Model used for PDF extraction |
+| `CLAUDE_MAX_TOKENS` | `2048` | Max tokens Claude may return per PDF extraction |
 | `PDF_MAX_WORKERS` | `5` | Parallel workers for PDF parsing |
 | `WEATHER_DB_PATH` | `db/weather.db` | SQLite database path |
 | `WEATHER_PDF_DIR` | `data/pdf` | Directory containing PDF files |

@@ -73,7 +73,13 @@ def resolve_conflicts(engine: Engine) -> list[str]:
 
 def _add_flag(conn, date_str: str, data_source: str, new_flag: str) -> None:
     """Append *new_flag* to the parse_flags JSON array for the given row
-    and set is_resolved_conflict = TRUE."""
+    and set is_resolved_conflict = TRUE.
+
+    This issues one SELECT + one UPDATE per (date, source) call.  For the
+    current dataset (9 conflict dates × 2 sources = 18 calls) the overhead
+    is negligible.  For datasets with thousands of conflict rows, batch the
+    flag updates into a single SQL expression instead.
+    """
     row = conn.execute(
         select(daily_weather.c.parse_flags).where(
             daily_weather.c.observation_date == date_str,

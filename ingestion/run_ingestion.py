@@ -35,7 +35,7 @@ from ingestion import config
 from ingestion.conflict_resolver import get_conflicts, resolve_conflicts
 from ingestion.csv_parser import parse_csv, parse_csv_dir
 from ingestion.models import MonthlySummaryRecord, WeatherRecord
-from ingestion.pdf_parser import parse_all_pdfs
+from ingestion.pdf_parser import parse_pdf
 from ingestion.schema import (
     daily_weather,
     ingestion_log,
@@ -132,7 +132,8 @@ def _truncate_data_tables(engine) -> None:
     with engine.begin() as conn:
         conn.execute(text("DELETE FROM daily_weather"))
         conn.execute(text("DELETE FROM monthly_summary"))
-    logger.info("Truncated daily_weather and monthly_summary for re-ingestion.")
+        conn.execute(text("DELETE FROM ingestion_log"))
+    logger.info("Truncated daily_weather, monthly_summary, and ingestion_log for re-ingestion.")
 
 
 # ── Main pipeline ────────────────────────────────────────────────────────────
@@ -185,7 +186,6 @@ def run(
         logger.warning("No PDF files found in %s", pdf_dir)
     else:
         from concurrent.futures import ThreadPoolExecutor
-        from ingestion.pdf_parser import parse_pdf
 
         # Filter out already-ingested PDFs before submitting any work.
         pending = [
@@ -214,7 +214,16 @@ def run(
 
             # Collect results and insert serially.
             for future, pdf_source in futures.items():
-                record = future.result()  # re-raises any exception from the worker
+                try:
+                    record = future.result()
+                except Exception as exc:
+                    logger.error("PDF %s failed: %s", pdf_source, exc)
+                    _log_run(
+                        engine, run_id, pdf_source,
+                        rows_parsed=0, rows_inserted=0, rows_skipped=0,
+                        errors=[f"parse_failed:{exc}"],
+                    )
+                    continue
                 ins, skip = _upsert_daily_records(engine, [record])
                 pdf_errors = [
                     f"{pdf_source}:{f}"

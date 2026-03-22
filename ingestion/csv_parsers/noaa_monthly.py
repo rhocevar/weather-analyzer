@@ -58,7 +58,7 @@ class NOAAMonthlyParser:
         """Return True if any cell in the DataFrame looks like 'YY-Mon'."""
         if df.empty or len(df.columns) < 2:
             return False
-        for row_idx in range(min(50, len(df))):
+        for row_idx in range(min(50, len(df))):  # month headers always appear in the first few rows
             for col_idx in range(len(df.columns)):
                 if _HEADER_PATTERN.match(str(df.iloc[row_idx, col_idx]).strip()):
                     return True

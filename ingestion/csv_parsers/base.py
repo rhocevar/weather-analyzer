@@ -59,6 +59,9 @@ def try_parse_date(value: object) -> Optional[str]:
     try:
         dt = dateutil_parser.parse(s, dayfirst=False)
         if dt.year < 2000:
+            # dateutil interprets 2-digit years as 1900s (e.g. "1/1/26" → 1926).
+            # This dataset exclusively covers 2026; adding 100 restores the correct
+            # century.  If a future dataset spans years before 2000, remove this.
             dt = dt.replace(year=dt.year + 100)
         return dt.date().isoformat()
     except Exception:

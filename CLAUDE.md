@@ -7,6 +7,7 @@ python -m venv .venv
 source .venv/bin/activate        # macOS / Linux
 .venv\Scripts\activate           # Windows
 pip install -r requirements.txt
+pip install -e .                 # makes ingestion + chatbot packages importable
 ```
 
 ## Run the ingestion pipeline
@@ -69,6 +70,8 @@ tests/
   test_csv_parser.py
   test_pdf_parser.py
   test_conflict_resolver.py
+  test_chatbot.py
+  test_run_ingestion.py
 
 data/
   pdf/                 # 10 daily PDFs (Mar 9-18 2026)
@@ -86,6 +89,8 @@ chatbot/
 docs/
   schema_decisions.md  # schema design rationale and data quality catalog
   project-tracker.md   # overall project progress tracker
+
+pyproject.toml         # package config — run `pip install -e .` to make ingestion + chatbot importable
 ```
 
 ## Database
@@ -107,6 +112,7 @@ Key tables:
 |---|---|---|
 | `ANTHROPIC_API_KEY` | (required) | Anthropic API key for PDF extraction |
 | `CLAUDE_MODEL` | `claude-sonnet-4-6` | Model used for PDF extraction |
+| `CLAUDE_MAX_TOKENS` | `2048` | Max tokens Claude may return per PDF extraction |
 | `PDF_MAX_WORKERS` | `5` | Parallel workers for PDF parsing |
 | `WEATHER_DB_PATH` | `db/weather.db` | SQLite database path |
 | `WEATHER_PDF_DIR` | `data/pdf` | Directory containing PDF files |

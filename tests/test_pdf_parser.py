@@ -1,4 +1,9 @@
-"""Unit tests for ingestion/pdf_parser.py."""
+"""Unit tests for ingestion/pdf_parser.py.
+
+Note: TestExtractPdfContent is an integration test that reads real PDF files
+from data/pdf/.  It is skipped automatically when that directory is absent
+(e.g. on a fresh checkout before the data files are added).
+"""
 
 import json
 from pathlib import Path
@@ -9,6 +14,10 @@ import pytest
 
 from ingestion import config
 from ingestion.pdf_parser import _date_from_filename, _extract_pdf_content, parse_pdf
+
+_PDF_DIR_AVAILABLE = Path(config.PDF_DIR).is_dir() and any(
+    Path(config.PDF_DIR).glob("*.pdf")
+)
 
 
 # ── _date_from_filename ───────────────────────────────────────────────────────
@@ -32,6 +41,7 @@ class TestDateFromFilename:
 
 # ── _extract_pdf_content ──────────────────────────────────────────────────────
 
+@pytest.mark.skipif(not _PDF_DIR_AVAILABLE, reason="data/pdf/ directory not present")
 class TestExtractPdfContent:
     @pytest.mark.parametrize("pdf_name", [
         "weather_mar09.pdf", "weather_mar10.pdf", "weather_mar11.pdf",
