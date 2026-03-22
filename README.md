@@ -46,6 +46,8 @@ weather-analyzer/
 │   ├── pdf_parser.py                 # pdfplumber → Claude API → structured data
 │   ├── conflict_resolver.py          # PDF wins for overlapping Mar 9-17 dates
 │   └── run_ingestion.py              # pipeline entry point
+├── analysis/
+│   └── weather_analysis.ipynb        # Phase 2 — 5 analyses (Jupyter Notebook)
 ├── tests/                            # 66 unit tests (no API key required)
 ├── docs/
 │   ├── schema_decisions.md           # schema rationale and data quality catalog
@@ -84,14 +86,25 @@ CSV file
 
 The `active_daily_weather` view provides a conflict-resolved, single-row-per-date dataset for all downstream queries.
 
-### Phase 2 — Analysis
+### Phase 2 — Analysis (complete)
 
-Jupyter Notebook with at minimum 3 analyses addressing:
-- Hottest day vs. historical normal
-- Biggest temperature swing
-- Days warmer than average
-- Records or near-records
-- 3-month trends
+Jupyter Notebook (`analysis/weather_analysis.ipynb`) with 5 analyses:
+
+| # | Analysis | Stakeholder question |
+|---|---|---|
+| 1 | 3-month temperature overview (line chart) | Any trends over 3 months? |
+| 2 | Hottest days vs. historical normal, Mar 9–18 (bar chart) | Hottest day and how far above normal? |
+| 3 | Daily temperature swing high−low, all days (bar chart) | Biggest temperature swing? |
+| 4 | Departure from normal, Mar 9–18 (signed bar chart) | How many days warmer than average? |
+| 5 | Heating & cooling degree days vs. normal by month (grouped bars) | Records and 3-month energy trends |
+
+**Launch the notebook:**
+
+```bash
+jupyter notebook analysis/weather_analysis.ipynb
+```
+
+All charts are sourced from `active_daily_weather` and `monthly_summary` in `db/weather.db` — no hardcoded values.
 
 ### Phase 3 — AI Chatbot
 

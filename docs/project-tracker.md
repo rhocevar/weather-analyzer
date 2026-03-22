@@ -110,7 +110,11 @@ PDF wins for conflict dates; CSV fills in all other dates. **This is what Phase 
 
 ## Phase 2 Progress
 
-*(Not started)*
+| Step | Description | Status |
+|---|---|---|
+| 1 | Add notebook dependencies to `requirements.txt` (`matplotlib`, `seaborn`, `jupyter`, `ipykernel`) | ✅ Done |
+| 2 | Create `analysis/weather_analysis.ipynb` with 5 analyses | ✅ Done |
+| 3 | Update `README.md`, `CLAUDE.md` with notebook instructions | ✅ Done |
 
 ---
 

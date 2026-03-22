@@ -3,13 +3,6 @@
 ## Setup
 
 ```bash
-pip install -r requirements.txt
-cp .env.example .env        # then fill in ANTHROPIC_API_KEY
-```
-
-## Setup
-
-```bash
 python -m venv .venv
 source .venv/bin/activate        # macOS / Linux
 .venv\Scripts\activate           # Windows
@@ -35,6 +28,14 @@ CLAUDE_MODEL=claude-opus-4-6 python -m ingestion.run_ingestion
 # Override paths
 python -m ingestion.run_ingestion --db-path /tmp/test.db --pdf-dir data/pdf --csv-dir data/csv
 ```
+
+## Run the analysis notebook
+
+```bash
+jupyter notebook analysis/weather_analysis.ipynb
+```
+
+Opens in browser. Run all cells top-to-bottom (Kernel → Restart & Run All). Requires `db/weather.db` to exist — run the ingestion pipeline first if it doesn't.
 
 ## Run tests
 
@@ -67,6 +68,9 @@ data/
 
 db/
   weather.db           # generated SQLite database (gitignored)
+
+analysis/
+  weather_analysis.ipynb  # Phase 2 — 5 analyses (launch with: jupyter notebook)
 
 docs/
   schema_decisions.md  # schema design rationale and data quality catalog
