@@ -125,7 +125,7 @@ User question → Claude API → query_weather(sql) tool
 python chatbot/weather_chatbot.py
 ```
 
-<video src="docs/demo.mp4" controls width="100%"></video>
+![Chatbot demo](docs/demo.gif)
 
 Try asking any of the 5 stakeholder questions:
 1. *What was the hottest day in the last 10 days, and how far above the daily normal was it?*
