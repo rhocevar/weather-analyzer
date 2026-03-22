@@ -1,1 +1,129 @@
-# weather-analyzer
+# Weather Analyzer
+
+Analysis of past weather in Downtown Los Angeles — data ingestion, exploration, and an AI chatbot grounded in the data.
+
+## Quick start
+
+```bash
+# 1. Clone and enter the repo
+git clone <repo-url> && cd weather-analyzer
+
+# 2. Create and activate a virtual environment
+python -m venv .venv
+source .venv/bin/activate        # macOS / Linux
+.venv\Scripts\activate           # Windows
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Add your Anthropic API key
+cp .env.example .env
+# Edit .env and set ANTHROPIC_API_KEY=your_key_here
+
+# 5. Run the ingestion pipeline
+python -m ingestion.run_ingestion
+
+# 6. Run the tests
+pytest tests/ -v
+```
+
+## Project structure
+
+```
+weather-analyzer/
+├── data/
+│   ├── csv/
+│   │   └── 3month_weather.csv        # Jan–Mar 2026 weather data
+│   └── pdf/
+│       └── weather_mar09.pdf … 18    # 10 daily weather reports
+├── db/
+│   └── weather.db                    # generated SQLite database (gitignored)
+├── ingestion/
+│   ├── config.py                     # tunables — model, paths (env-var overridable)
+│   ├── schema.py                     # SQLAlchemy tables + active_daily_weather view
+│   ├── models.py                     # Pydantic WeatherRecord / MonthlySummaryRecord
+│   ├── csv_parser.py                 # CSV extraction and normalization
+│   ├── pdf_parser.py                 # pdfplumber → Claude API → structured data
+│   ├── conflict_resolver.py          # PDF wins for overlapping Mar 9-17 dates
+│   └── run_ingestion.py              # pipeline entry point
+├── tests/                            # 66 unit tests (no API key required)
+├── docs/
+│   ├── schema_decisions.md           # schema rationale and data quality catalog
+│   └── project-tracker.md           # phase-by-phase progress tracker
+├── .env.example                      # environment variable template
+├── requirements.txt
+└── CLAUDE.md                         # developer quick-reference
+```
+
+## Data sources
+
+| File | Period | Notes |
+|---|---|---|
+| `data/pdf/weather_mar09.pdf` … `mar18.pdf` | Mar 9–18, 2026 | 10 daily reports; each formatted differently |
+| `data/csv/3month_weather.csv` | Jan 1 – Mar 18, 2026 | Side-by-side 3-month layout; several data quality issues |
+
+Both sources cover Mar 9–17. The pipeline keeps both rows and uses **PDF as the authoritative source** for that overlap (see [docs/schema_decisions.md](docs/schema_decisions.md)).
+
+## Architecture
+
+### Phase 1 — Data ingestion (complete)
+
+```
+PDF files
+  └─ pdfplumber  (raw text + table extraction)
+       └─ Claude API  (structured JSON — handles any format without hardcoded rules)
+            └─ Pydantic  (validates output; bad values → null)
+                 └─ SQLite  (daily_weather table)
+
+CSV file
+  └─ pandas  (reshape side-by-side layout)
+       └─ safe_float()  (coerce bad values to null)
+            └─ Pydantic  (validates output)
+                 └─ SQLite  (daily_weather + monthly_summary tables)
+```
+
+The `active_daily_weather` view provides a conflict-resolved, single-row-per-date dataset for all downstream queries.
+
+### Phase 2 — Analysis
+
+Jupyter Notebook with at minimum 3 analyses addressing:
+- Hottest day vs. historical normal
+- Biggest temperature swing
+- Days warmer than average
+- Records or near-records
+- 3-month trends
+
+### Phase 3 — AI Chatbot
+
+Claude API with **SQL tool use** — the LLM generates SQL queries against the SQLite database and returns grounded answers. No vector database needed; structured weather data is better served by exact SQL than fuzzy semantic search.
+
+## Configuration
+
+All settings can be overridden via environment variables:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | *(required)* | Anthropic API key |
+| `CLAUDE_MODEL` | `claude-sonnet-4-6` | Model used for PDF extraction |
+| `WEATHER_DB_PATH` | `db/weather.db` | SQLite database path |
+| `WEATHER_PDF_DIR` | `data/pdf` | Directory containing PDF files |
+| `WEATHER_CSV_DIR` | `data/csv` | Directory containing CSV files |
+
+## Pipeline options
+
+```bash
+# Normal run (idempotent — safe to run multiple times)
+python -m ingestion.run_ingestion
+
+# Force re-ingestion from scratch
+python -m ingestion.run_ingestion --force-reingest
+
+# Use a different CSV directory
+python -m ingestion.run_ingestion --csv-dir data/csv
+
+# Use a different model
+CLAUDE_MODEL=claude-opus-4-6 python -m ingestion.run_ingestion
+
+# Run tests (no API key required)
+pytest tests/ -v
+```

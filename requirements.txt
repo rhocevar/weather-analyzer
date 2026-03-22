@@ -1,0 +1,8 @@
+sqlalchemy==2.0.*
+pdfplumber==0.11.*
+pandas==2.2.*
+python-dateutil==2.9.*
+pydantic==2.7.*
+anthropic==0.28.*
+pytest==8.3.*
+python-dotenv==1.0.*
