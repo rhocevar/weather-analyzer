@@ -106,6 +106,28 @@ The Claude model is configurable via the `CLAUDE_MODEL` environment variable (de
 
 ---
 
+## 11. Chatbot System Prompt — Data Quality Notes
+
+The Phase 3 chatbot (`chatbot/weather_chatbot.py`) passes a `SYSTEM_PROMPT` to Claude on every request. That prompt includes a set of data quality notes telling Claude how to interpret NULLs and known bad values. These notes are **hardcoded as a string constant** in the file, not derived from the database at runtime.
+
+**Why hardcoded?**
+The dataset is fixed. Deriving structural facts (date range, null patterns) from the database at startup would add code complexity without improving correctness for this static dataset. More importantly, notes that require human judgment — such as "the value 45.0 on 2026-02-26 is a data error, not a real departure" — cannot be auto-detected from the data alone regardless of how sophisticated the derivation logic is.
+
+**Where each note comes from:**
+
+| Note in system prompt | Origin |
+|---|---|
+| Feb 26 `temp_departure_f = 45.0` is a data error | `parse_flags` on that row: `percent_sign_stripped:temp_departure_f=45` (source CSV had `"45%"`) |
+| Mar 13 / Mar 16 have no departure | `parse_flags`: `claude_note: temp_departure_f could not be computed` — PDF reports lacked normal temperature context |
+| Mar 18 all NULL | `parse_flags`: `claude_note: All daily observations are missing (M)` — source PDF had `"M"` for every field |
+| Precipitation NULL for Jan/Feb | That column was absent from the 3-month CSV entirely |
+| Mar 19–31 are placeholder NULLs | CSV had `"M"` for every field on future dates; `safe_float("M")` → `NULL` |
+| Last 10 days = Mar 9–18 | The 10 PDF source files cover exactly those dates |
+
+All of the above are also visible at row level in the `parse_flags` column of `daily_weather` and in the Data Quality Catalog below.
+
+---
+
 ## Data Quality Catalog
 
 | Source | Issue | Handling |

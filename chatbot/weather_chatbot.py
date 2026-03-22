@@ -40,9 +40,30 @@ from ingestion import config  # noqa: E402  (import after path fix)
 # ---------------------------------------------------------------------------
 # System prompt
 # ---------------------------------------------------------------------------
-# Hardcoded for this fixed dataset. Data quality notes describe known issues
-# discovered during ingestion so Claude does not misinterpret NULL values or
-# the one erroneous departure figure.
+# The schema description and data quality notes are hardcoded here as a
+# string constant.  They were not invented manually — each note originates
+# from a concrete finding made during Phase 1 ingestion:
+#
+#   - Feb 26 departure = 45.0  →  parse_flags contains
+#       "percent_sign_stripped:temp_departure_f=45" on that row
+#   - Mar 13 / Mar 16 no departure  →  Claude logged
+#       "claude_note: temp_departure_f could not be computed..."
+#   - Mar 18 all NULL  →  Claude returned null for every field;
+#       parse_flags contains "claude_note: All daily observations are missing"
+#   - Precipitation NULL for Jan/Feb  →  that column was absent from the CSV
+#   - Mar 19–31 placeholder NULLs  →  CSV had "M" for every future-date field
+#   - Last 10 days = Mar 9–18  →  the 10 PDF files cover exactly those dates
+#
+# All of the above are also catalogued in docs/schema_decisions.md
+# (Data Quality Catalog) and are visible at row level via the parse_flags
+# column in the daily_weather table.
+#
+# Why hardcoded rather than derived from the database at startup?
+# The dataset is fixed.  The notes that matter most (data errors, missing
+# fields) require human judgment and cannot be auto-detected from the data
+# alone.  Deriving the structural facts (date range, null patterns) would
+# add code complexity without improving correctness for this dataset.
+# See docs/schema_decisions.md §11 for a fuller discussion.
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = """
