@@ -25,6 +25,10 @@ CLAUDE_MODEL: str = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-6")
 # Maximum tokens Claude may return when extracting a single PDF's data.
 CLAUDE_MAX_TOKENS: int = int(os.getenv("CLAUDE_MAX_TOKENS", "1024"))
 
+# Maximum number of concurrent Claude API calls when parsing PDFs.
+# Each PDF triggers one API call; these are I/O-bound so parallelism helps.
+PDF_MAX_WORKERS: int = int(os.getenv("PDF_MAX_WORKERS", "5"))
+
 # ---------------------------------------------------------------------------
 # Paths  (all relative to repo root by default)
 # ---------------------------------------------------------------------------

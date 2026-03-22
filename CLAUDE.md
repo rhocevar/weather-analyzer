@@ -107,6 +107,7 @@ Key tables:
 |---|---|---|
 | `ANTHROPIC_API_KEY` | (required) | Anthropic API key for PDF extraction |
 | `CLAUDE_MODEL` | `claude-sonnet-4-6` | Model used for PDF extraction |
+| `PDF_MAX_WORKERS` | `5` | Parallel workers for PDF parsing |
 | `WEATHER_DB_PATH` | `db/weather.db` | SQLite database path |
 | `WEATHER_PDF_DIR` | `data/pdf` | Directory containing PDF files |
 | `WEATHER_CSV_DIR` | `data/csv` | Directory containing CSV files |

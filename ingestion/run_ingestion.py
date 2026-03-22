@@ -184,30 +184,55 @@ def run(
     if not pdf_paths:
         logger.warning("No PDF files found in %s", pdf_dir)
     else:
-        anthropic_client = anthropic.Anthropic()
-        for pdf_path in pdf_paths:
-            pdf_source = pdf_path.name
-            if not force_reingest and _already_ingested(engine, pdf_source):
-                logger.info("PDF already ingested — skipping: %s", pdf_source)
-                continue
+        from concurrent.futures import ThreadPoolExecutor
+        from ingestion.pdf_parser import parse_pdf
 
-            logger.info("Parsing PDF: %s", pdf_source)
-            from ingestion.pdf_parser import parse_pdf
-            record = parse_pdf(str(pdf_path), client=anthropic_client)
-            ins, skip = _upsert_daily_records(engine, [record])
-            pdf_errors = [f"{pdf_source}:{f}" for f in record.parse_flags if "error" in f.lower() or "failed" in f.lower()]
-            _log_run(
-                engine, run_id, pdf_source,
-                rows_parsed=1,
-                rows_inserted=ins,
-                rows_skipped=skip,
-                errors=pdf_errors,
-            )
+        # Filter out already-ingested PDFs before submitting any work.
+        pending = [
+            p for p in pdf_paths
+            if force_reingest or not _already_ingested(engine, p.name)
+        ]
+        skipped_pdfs = len(pdf_paths) - len(pending)
+        if skipped_pdfs:
+            logger.info("Skipping %d already-ingested PDF(s).", skipped_pdfs)
+
+        if pending:
+            anthropic_client = anthropic.Anthropic()
             logger.info(
-                "PDF %s: date=%s max=%s min=%s flags=%s",
-                pdf_source, record.observation_date,
-                record.temp_max_f, record.temp_min_f, record.parse_flags,
+                "Parsing %d PDF(s) with up to %d workers…",
+                len(pending), config.PDF_MAX_WORKERS,
             )
+
+            # Parse all PDFs in parallel (I/O-bound — Claude API round trips).
+            # DB inserts happen serially on the main thread afterward to avoid
+            # SQLite write contention.
+            futures = {}
+            with ThreadPoolExecutor(max_workers=config.PDF_MAX_WORKERS) as executor:
+                for pdf_path in pending:
+                    future = executor.submit(parse_pdf, str(pdf_path), anthropic_client)
+                    futures[future] = pdf_path.name
+
+            # Collect results and insert serially.
+            for future, pdf_source in futures.items():
+                record = future.result()  # re-raises any exception from the worker
+                ins, skip = _upsert_daily_records(engine, [record])
+                pdf_errors = [
+                    f"{pdf_source}:{f}"
+                    for f in record.parse_flags
+                    if "error" in f.lower() or "failed" in f.lower()
+                ]
+                _log_run(
+                    engine, run_id, pdf_source,
+                    rows_parsed=1,
+                    rows_inserted=ins,
+                    rows_skipped=skip,
+                    errors=pdf_errors,
+                )
+                logger.info(
+                    "PDF %s: date=%s max=%s min=%s flags=%s",
+                    pdf_source, record.observation_date,
+                    record.temp_max_f, record.temp_min_f, record.parse_flags,
+                )
 
     # Step 4: Conflict resolution
     logger.info("Resolving PDF/CSV conflicts...")
