@@ -204,18 +204,32 @@ def chat() -> None:
 
         # Inner loop: Claude may call the tool more than once before answering.
         while True:
-            response = client.messages.create(
+            with client.messages.stream(
                 model=config.CLAUDE_MODEL,
                 max_tokens=1024,
                 system=SYSTEM_PROMPT,
                 tools=TOOLS,
                 messages=messages,
-            )
+            ) as stream:
+                # Stream the answer token-by-token. Print the "Assistant: "
+                # prefix only when the first text token arrives so it doesn't
+                # appear on tool-use turns that produce no text output.
+                first_token = True
+                for text in stream.text_stream:
+                    if first_token:
+                        print("\nAssistant: ", end="", flush=True)
+                        first_token = False
+                    print(text, end="", flush=True)
 
-            if response.stop_reason == "tool_use":
-                # Collect all tool calls from this response.
+                final = stream.get_final_message()
+
+            if final.stop_reason == "tool_use":
+                # Let the user know a database lookup is happening.
+                print("\n⏳ Querying database...", flush=True)
+
+                # Collect all tool calls and execute them.
                 tool_results = []
-                for block in response.content:
+                for block in final.content:
                     if block.type == "tool_use":
                         result = run_query(block.input["sql"])
                         tool_results.append(
@@ -227,24 +241,16 @@ def chat() -> None:
                         )
 
                 # Append assistant turn + tool results, then loop back.
-                messages.append({"role": "assistant", "content": response.content})
+                messages.append({"role": "assistant", "content": final.content})
                 messages.append({"role": "user", "content": tool_results})
 
-            elif response.stop_reason == "end_turn":
-                answer = next(
-                    (
-                        block.text
-                        for block in response.content
-                        if hasattr(block, "text")
-                    ),
-                    "(no response)",
-                )
-                messages.append({"role": "assistant", "content": response.content})
-                print(f"\nAssistant: {answer}\n")
+            elif final.stop_reason == "end_turn":
+                print("\n")
+                messages.append({"role": "assistant", "content": final.content})
                 break
 
             else:
-                print(f"(Unexpected stop reason: {response.stop_reason})")
+                print(f"(Unexpected stop reason: {final.stop_reason})")
                 break
 
 
