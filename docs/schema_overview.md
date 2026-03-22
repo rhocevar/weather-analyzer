@@ -1,6 +1,98 @@
-# Schema Decisions & Assumptions
+# Schema Overview
 
 This document describes the database schema design for the Weather Analyzer ingestion pipeline and explains the key decisions made at each step.
+
+---
+
+## Schema Diagram
+
+```mermaid
+erDiagram
+    daily_weather {
+        INTEGER id PK
+        DATE observation_date
+        REAL temp_max_f
+        REAL temp_min_f
+        REAL temp_avg_f
+        REAL temp_departure_f
+        REAL heating_degree_days
+        REAL cooling_degree_days
+        REAL precipitation_in
+        REAL snow_depth_in
+        TEXT data_source
+        TEXT source_file
+        BOOLEAN is_resolved_conflict
+        TEXT parse_flags
+        TIMESTAMP ingested_at
+    }
+    monthly_summary {
+        INTEGER id PK
+        TEXT month_year
+        TEXT summary_type
+        REAL temp_max_f
+        REAL temp_min_f
+        REAL temp_avg_f
+        REAL temp_departure_f
+        REAL heating_degree_days
+        REAL cooling_degree_days
+        REAL precipitation_in
+        TEXT source_file
+        TIMESTAMP ingested_at
+    }
+    ingestion_log {
+        INTEGER id PK
+        TEXT run_id
+        TEXT source_file
+        INTEGER rows_parsed
+        INTEGER rows_inserted
+        INTEGER rows_skipped
+        TEXT errors
+        TIMESTAMP run_at
+    }
+    active_daily_weather {
+        DATE observation_date
+        REAL temp_max_f
+        REAL temp_min_f
+        REAL temp_avg_f
+        REAL temp_departure_f
+        REAL heating_degree_days
+        REAL cooling_degree_days
+        REAL precipitation_in
+        REAL snow_depth_in
+        TEXT data_source
+    }
+    daily_weather |o--o{ active_daily_weather : "PDF wins (VIEW)"
+```
+
+---
+
+## Pipeline Flow
+
+```mermaid
+flowchart LR
+    pdf["PDF files\nMar 9–18 (10 days)"]
+    csv["CSV file\nJan–Mar 2026"]
+
+    pdf_parser["pdf_parser.py\npdfplumber + Claude API"]
+    csv_parser["csv_parser.py\npandas"]
+
+    dw[("daily_weather")]
+    ms[("monthly_summary")]
+    il[("ingestion_log")]
+
+    resolver["conflict_resolver.py\nPDF wins"]
+    view[/"active_daily_weather\nVIEW"/]
+
+    notebook["Analysis\nPhase 2"]
+    chatbot["Chatbot\nPhase 3"]
+
+    pdf --> pdf_parser --> dw
+    csv --> csv_parser --> dw
+    csv_parser --> ms
+    pdf_parser & csv_parser --> il
+    dw --> resolver --> view
+    view --> notebook & chatbot
+```
 
 ---
 

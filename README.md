@@ -53,7 +53,7 @@ weather-analyzer/
 │   └── weather_chatbot.py            # Phase 3 — CLI chatbot (Claude API + SQL tool use)
 ├── tests/                            # 66 unit tests (no API key required)
 ├── docs/
-│   ├── schema_decisions.md           # schema rationale and data quality catalog
+│   ├── schema_overview.md           # schema rationale and data quality catalog
 │   └── project-tracker.md           # phase-by-phase progress tracker
 ├── .env.example                      # environment variable template
 ├── requirements.txt
@@ -67,7 +67,7 @@ weather-analyzer/
 | `data/pdf/weather_mar09.pdf` … `mar18.pdf` | Mar 9–18, 2026 | 10 daily reports; each formatted differently |
 | `data/csv/3month_weather.csv` | Jan 1 – Mar 18, 2026 | Side-by-side 3-month layout; several data quality issues |
 
-Both sources cover Mar 9–17. The pipeline keeps both rows and uses **PDF as the authoritative source** for that overlap (see [docs/schema_decisions.md](docs/schema_decisions.md)).
+Both sources cover Mar 9–17. The pipeline keeps both rows and uses **PDF as the authoritative source** for that overlap (see [docs/schema_overview.md](docs/schema_overview.md)).
 
 ## Architecture
 

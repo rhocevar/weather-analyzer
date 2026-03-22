@@ -54,7 +54,7 @@ from ingestion import config  # noqa: E402
 #   - Mar 19–31 placeholder NULLs  →  CSV had "M" for every future-date field
 #   - Last 10 days = Mar 9–18  →  the 10 PDF files cover exactly those dates
 #
-# All of the above are also catalogued in docs/schema_decisions.md
+# All of the above are also catalogued in docs/schema_overview.md
 # (Data Quality Catalog) and are visible at row level via the parse_flags
 # column in the daily_weather table.
 #
@@ -63,7 +63,7 @@ from ingestion import config  # noqa: E402
 # fields) require human judgment and cannot be auto-detected from the data
 # alone.  Deriving the structural facts (date range, null patterns) would
 # add code complexity without improving correctness for this dataset.
-# See docs/schema_decisions.md §11 for a fuller discussion.
+# See docs/schema_overview.md §11 for a fuller discussion.
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = """

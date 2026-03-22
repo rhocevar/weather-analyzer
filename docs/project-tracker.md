@@ -95,7 +95,7 @@ PDF wins for conflict dates; CSV fills in all other dates. **This is what Phase 
 | 6 | Conflict resolver + view (`ingestion/conflict_resolver.py`) | ✅ Done |
 | 7 | Ingestion orchestrator (`ingestion/run_ingestion.py`) | ✅ Done |
 | 8 | Unit tests (`tests/`) — 88/88 passing | ✅ Done |
-| 9 | Schema decisions doc (`docs/schema_decisions.md`) | ✅ Done |
+| 9 | Schema decisions doc (`docs/schema_overview.md`) | ✅ Done |
 | 10 | `CLAUDE.md` | ✅ Done |
 | 11 | Parallel PDF ingestion (`ThreadPoolExecutor`, `PDF_MAX_WORKERS`) | ✅ Done |
 

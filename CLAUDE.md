@@ -87,7 +87,7 @@ chatbot/
   weather_chatbot.py      # Phase 3 — CLI chatbot (launch with: python chatbot/weather_chatbot.py)
 
 docs/
-  schema_decisions.md  # schema design rationale and data quality catalog
+  schema_overview.md  # schema design rationale and data quality catalog
   project-tracker.md   # overall project progress tracker
 
 pyproject.toml         # package config — run `pip install -e .` to make ingestion + chatbot importable
