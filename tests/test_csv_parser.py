@@ -2,11 +2,13 @@
 
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 from ingestion import config
-from ingestion.csv_parser import parse_csv
+from ingestion.csv_parser import parse_csv, parse_csv_dir
 from ingestion.csv_parsers.base import safe_float
+from ingestion.csv_parsers.noaa_monthly import NOAAMonthlyParser
 
 
 # ── safe_float ────────────────────────────────────────────────────────────────
@@ -169,3 +171,40 @@ class TestCSVParserSummaryRows:
         _, summaries, _ = csv_parsed
         months = {s.month_year for s in summaries}
         assert months == {"2026-01", "2026-02", "2026-03"}
+
+
+# ── CSV dispatcher ────────────────────────────────────────────────────────────
+
+class TestCSVDispatcher:
+    def test_no_parser_found_returns_error(self, tmp_path):
+        """A CSV with an unrecognised format returns a no_parser_found error."""
+        csv = tmp_path / "unknown.csv"
+        csv.write_text("col_a,col_b\n1,2\n3,4\n")
+        daily, summaries, errors = parse_csv(str(csv))
+        assert daily == []
+        assert summaries == []
+        assert any("no_parser_found" in e for e in errors)
+
+    def test_parse_csv_dir_combines_results(self, tmp_path):
+        """parse_csv_dir aggregates records from every CSV in a directory."""
+        import shutil
+        src = Path(config.CSV_DIR) / "3month_weather.csv"
+        shutil.copy(src, tmp_path / "3month_weather.csv")
+        daily, summaries, errors = parse_csv_dir(str(tmp_path))
+        assert len(daily) == 83
+        assert len(summaries) == 9
+
+    def test_parse_csv_dir_empty_directory(self, tmp_path):
+        """parse_csv_dir on an empty directory returns empty lists."""
+        daily, summaries, errs = parse_csv_dir(str(tmp_path))
+        assert daily == [] and summaries == [] and errs == []
+
+    def test_can_parse_rejects_non_noaa(self):
+        """NOAAMonthlyParser.can_parse() returns False for a plain DataFrame."""
+        df = pd.DataFrame({"a": [1, 2], "b": [3, 4]})
+        assert NOAAMonthlyParser.can_parse(df) is False
+
+    def test_can_parse_accepts_noaa_header(self):
+        """NOAAMonthlyParser.can_parse() returns True when row 0 col 0 is 'YY-Mon'."""
+        df = pd.DataFrame([["26-Jan", "", ""], ["", "", ""], ["Date", "Max", "Min"]])
+        assert NOAAMonthlyParser.can_parse(df) is True
