@@ -143,10 +143,12 @@ def run(
     pdf_dir: str = config.PDF_DIR,
     csv_dir: str = config.CSV_DIR,
     force_reingest: bool = False,
+    model: str = config.CLAUDE_MODEL,
 ) -> None:
+    config.CLAUDE_MODEL = model  # propagates to pdf_parser at call time
     run_id = str(uuid.uuid4())
     logger.info("Starting ingestion run %s", run_id)
-    logger.info("DB: %s | PDFs: %s | CSVs: %s", db_path, pdf_dir, csv_dir)
+    logger.info("DB: %s | PDFs: %s | CSVs: %s | model: %s", db_path, pdf_dir, csv_dir, model)
 
     # Step 1: Initialize DB
     engine = initialize_db(db_path)
@@ -294,6 +296,7 @@ def main() -> None:
     parser.add_argument("--db-path", default=config.DB_PATH, help="Path to SQLite database file")
     parser.add_argument("--pdf-dir", default=config.PDF_DIR, help="Directory containing weather PDFs")
     parser.add_argument("--csv-dir", default=config.CSV_DIR, help="Directory containing weather CSV files")
+    parser.add_argument("--model", default=config.CLAUDE_MODEL, help="Claude model used for PDF extraction")
     parser.add_argument(
         "--force-reingest",
         action="store_true",
@@ -306,6 +309,7 @@ def main() -> None:
         pdf_dir=args.pdf_dir,
         csv_dir=args.csv_dir,
         force_reingest=args.force_reingest,
+        model=args.model,
     )
 
 

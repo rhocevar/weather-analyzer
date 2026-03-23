@@ -161,7 +161,7 @@ python -m ingestion.run_ingestion --force-reingest
 python -m ingestion.run_ingestion --csv-dir data/csv
 
 # Use a different model
-CLAUDE_MODEL=claude-opus-4-6 python -m ingestion.run_ingestion
+python -m ingestion.run_ingestion --model claude-opus-4-6
 
 # Run tests (no API key required)
 pytest tests/ -v

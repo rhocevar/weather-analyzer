@@ -24,7 +24,7 @@ The pipeline is idempotent — safe to run multiple times.
 python -m ingestion.run_ingestion --force-reingest
 
 # Use a different Claude model for PDF extraction
-CLAUDE_MODEL=claude-opus-4-6 python -m ingestion.run_ingestion
+python -m ingestion.run_ingestion --model claude-opus-4-6
 
 # Override paths
 python -m ingestion.run_ingestion --db-path /tmp/test.db --pdf-dir data/pdf --csv-dir data/csv

@@ -27,7 +27,7 @@ from typing import Optional
 import anthropic
 import pdfplumber
 
-from ingestion.config import CLAUDE_MAX_TOKENS, CLAUDE_MODEL
+from ingestion import config
 from ingestion.models import WeatherRecord
 
 logger = logging.getLogger(__name__)
@@ -104,8 +104,8 @@ def _call_claude(content: str, client: anthropic.Anthropic) -> dict:
     Raises ValueError if the response cannot be parsed as JSON.
     """
     message = client.messages.create(
-        model=CLAUDE_MODEL,
-        max_tokens=CLAUDE_MAX_TOKENS,
+        model=config.CLAUDE_MODEL,
+        max_tokens=config.CLAUDE_MAX_TOKENS,
         system=_SYSTEM_PROMPT,
         messages=[{"role": "user", "content": content}],
     )
